@@ -3,6 +3,7 @@ package com.example.lab_week_10.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.lab_week_10.database.Total
 
 class TotalViewModel : ViewModel() {
     private val _total = MutableLiveData<Int>()
@@ -13,5 +14,9 @@ class TotalViewModel : ViewModel() {
 
     fun incrementTotal() {
         _total.postValue(_total.value?.plus(1))
+    }
+
+    fun setTotal(newTotal: Int){
+        _total.postValue(newTotal)
     }
 }
