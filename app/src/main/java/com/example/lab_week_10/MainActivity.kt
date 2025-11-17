@@ -4,6 +4,7 @@ import android.os.Build.ID
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -13,7 +14,9 @@ import androidx.lifecycle.ViewModelStore
 import androidx.room.Room
 import com.example.lab_week_10.database.Total
 import com.example.lab_week_10.database.TotalDatabase
+import com.example.lab_week_10.database.TotalObject
 import com.example.lab_week_10.viewmodels.TotalViewModel
+import java.util.Date
 
 class MainActivity : AppCompatActivity() {
     private val db by lazy { prepareDatabase() }
@@ -30,9 +33,17 @@ class MainActivity : AppCompatActivity() {
         prepareViewModel()
     }
 
+    override fun onStart(){
+        super.onStart()
+        val total = db.totalDao().getTotal(ID)
+        if(total.isNotEmpty()){
+            Toast.makeText(this, total.first().total.date, Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onPause(){
         super.onPause()
-        db.totalDao().update(Total(ID, viewModel.total.value!!))
+        db.totalDao().update(Total(ID, TotalObject(viewModel.total.value!!, Date().toString())))
     }
 
     private fun updateText(total: Int){
@@ -54,15 +65,17 @@ class MainActivity : AppCompatActivity() {
         return Room.databaseBuilder(
             applicationContext,
             TotalDatabase::class.java, "total-database"
-        ).allowMainThreadQueries().build()
+        ).allowMainThreadQueries()
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     private fun initializeValueFromDatabase(){
         val total = db.totalDao().getTotal(ID)
         if (total.isEmpty()){
-            db.totalDao().insert(Total(id = 1, total = 0))
+            db.totalDao().insert(Total(id = 1, total = TotalObject(0, Date().toString())))
         } else {
-            viewModel.setTotal(total.first().total)
+            viewModel.setTotal(total.first().total.value)
         }
     }
 
